@@ -1,0 +1,80 @@
+%define MAX_DIGITS 10
+
+_print_answer:
+    enter 1, 0              
+    push ebx
+    push edi
+    push esi
+    mov eax, [ebp+8]        
+    cmp eax, 0               
+    jge _print_answer_negate_end
+    ; call putc for '-'
+    push eax
+    push 0x2d               
+    call _putc
+    add esp, 4
+    pop eax
+    neg eax                 
+_print_answer_negate_end:
+    mov byte [ebp-4], 0     
+    mov ecx, MAX_DIGITS     
+_print_answer_loop_start:
+    cmp ecx, 0
+    je _print_answer_loop_end
+    push eax
+    push ecx
+    dec ecx             
+    push ecx            
+    call _pow_10
+    mov edx, eax        
+    add esp, 4
+    pop ecx             
+    pop eax
+    mov ebx, edx        
+    imul ebx, 10        
+    push eax
+    push ecx
+    push edx
+    push ebx            
+    push eax            
+    call _mod
+    mov ebx, eax        
+    add esp, 8
+    pop edx
+    pop ecx
+    pop eax
+    push esi
+    mov esi, edx
+    push eax
+    mov eax, ebx
+    mov edx, 0
+    idiv esi            
+    mov ebx, eax        
+    pop eax
+    pop esi
+    cmp ebx, 0                       
+    jne _print_answer_trailing_zeroes_check_end
+    cmp byte [ebp-4], 0               
+    jne _print_answer_trailing_zeroes_check_end
+    jmp _print_answer_loop_continue  
+_print_answer_trailing_zeroes_check_end:
+    mov byte [ebp-4], 1     
+    add ebx, 0x30          
+    push eax
+    push ecx
+    push edx
+    push ebx
+    call _putc
+    add esp, 4
+    pop edx
+    pop ecx
+    pop eax
+_print_answer_loop_continue:
+    sub ecx, 1
+    jmp _print_answer_loop_start
+_print_answer_loop_end:
+    pop esi
+    pop edi
+    pop ebx
+    leave
+    ret
